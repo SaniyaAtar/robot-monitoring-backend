@@ -7,13 +7,14 @@ from datetime import datetime
 
 app = FastAPI()
 
-# Enable CORS for frontend
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace "*" with frontend domain in production
+    allow_origins=["https://your-frontend-site.netlify.app"],  # Replace with your Netlify domain
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Simulate data for 10 robots
 robots = [

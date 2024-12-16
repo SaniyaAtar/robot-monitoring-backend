@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet"; // Import Leaflet for custom icons
 import "leaflet/dist/leaflet.css";
 
-const BACKEND_URL = "http://127.0.0.1:8000"; // Ensure no trailing space
+const BACKEND_URL = "https://robot-monitoring-backend.onrender.com"; // Replace with Render URL
 
 const App = () => {
   const [robots, setRobots] = useState([]);
@@ -39,19 +40,19 @@ const App = () => {
       socket.onerror = (error) => {
         console.error("WebSocket error:", error);
         alert("WebSocket connection failed. Retrying in 5 seconds...");
-        setTimeout(connectWebSocket, 5000); // Retry WebSocket connection
+        setTimeout(connectWebSocket, 5000);
       };
 
       socket.onclose = () => {
         console.log("WebSocket closed. Reconnecting in 5 seconds...");
-        setTimeout(connectWebSocket, 5000); // Retry WebSocket connection
+        setTimeout(connectWebSocket, 5000);
       };
     };
 
     connectWebSocket();
 
     return () => {
-      if (socket) socket.close(); // Cleanup WebSocket on unmount
+      if (socket) socket.close();
     };
   }, []);
 
@@ -63,6 +64,22 @@ const App = () => {
     if (filter === "low-battery") return robot.battery < 20;
     return true;
   });
+
+  // Function to get color for markers based on robot status and battery
+  const getStatusColor = (status, battery) => {
+    if (status === "Offline") return "red";
+    if (battery < 20) return "orange";
+    return "green";
+  };
+
+  // Function to create a custom Leaflet icon
+  const createCustomIcon = (color) =>
+    L.divIcon({
+      className: "custom-marker",
+      html: `<div style="background-color:${color}; width:15px; height:15px; border-radius:50%; border:2px solid black;"></div>`,
+      iconSize: [15, 15],
+      iconAnchor: [7.5, 7.5],
+    });
 
   return (
     <div>
@@ -86,19 +103,28 @@ const App = () => {
             typeof robot.location[0] === "number" &&
             typeof robot.location[1] === "number"
           ) {
+            const color = getStatusColor(robot.status, robot.battery);
             return (
-              <Marker key={robot.id} position={robot.location}>
+              <Marker
+                key={robot.id}
+                position={robot.location}
+                icon={createCustomIcon(color)} // Use the custom icon
+              >
                 <Popup>
                   <strong>{robot.id}</strong>
                   <br />
                   Status: {robot.status}
                   <br />
                   Battery: {robot.battery}%
+                  <br />
+                  CPU: {robot.cpu}%
+                  <br />
+                  RAM: {robot.ram} MB
                 </Popup>
               </Marker>
             );
           }
-          return null; // Skip invalid location data
+          return null;
         })}
       </MapContainer>
 
@@ -106,8 +132,8 @@ const App = () => {
       <table>
         <thead>
           <tr>
-            <th>Robot ID</th>
             <th>Status</th>
+            <th>Robot ID</th>
             <th>Battery (%)</th>
             <th>CPU Usage (%)</th>
             <th>RAM Consumption (MB)</th>
@@ -117,9 +143,25 @@ const App = () => {
         </thead>
         <tbody>
           {filteredRobots.map((robot) => (
-            <tr key={robot.id}>
+            <tr
+              key={robot.id}
+              style={{
+                backgroundColor: getStatusColor(robot.status, robot.battery),
+                color: "white",
+              }}
+            >
+              <td>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "10px",
+                    height: "10px",
+                    backgroundColor: getStatusColor(robot.status, robot.battery),
+                    borderRadius: "50%",
+                  }}
+                ></span>
+              </td>
               <td>{robot.id}</td>
-              <td>{robot.status}</td>
               <td>{robot.battery}%</td>
               <td>{robot.cpu}%</td>
               <td>{robot.ram}</td>
