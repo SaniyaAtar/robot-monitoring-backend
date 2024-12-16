@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet"; // Import Leaflet for custom icons
 import "leaflet/dist/leaflet.css";
 
-const BACKEND_URL = "https://robot-monitoring-backend.onrender.com"; // Replace with Render URL
+const BACKEND_URL = "https://robot-monitoring-backend-2.onrender.com"; // Replace with Render URL
 
 const App = () => {
   const [robots, setRobots] = useState([]);
@@ -62,6 +62,7 @@ const App = () => {
     if (filter === "online") return robot.status === "Online";
     if (filter === "offline") return robot.status === "Offline";
     if (filter === "low-battery") return robot.battery < 20;
+   
     return true;
   });
 
